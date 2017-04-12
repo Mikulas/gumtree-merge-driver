@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+# https://git-scm.com/docs/gitattributes/2.11.1#_defining_a_custom_merge_driver
+
+# The merge.*.driver variable’s value is used to construct
+# a command to run to merge ancestor’s version (%O),
+# current version (%A) and the other branches' version (%B).
+# These three tokens are replaced with the names of temporary
+# files that hold the contents of these versions when the
+# command line is built. Additionally, %L will be replaced
+# with the conflict marker size (see below).
+# The merge driver is expected to leave the result of the
+# merge in the file named with %A by overwriting it, and exit
+# with zero status if it managed to merge them cleanly,
+# or non-zero if there were conflicts.
+# The merge driver can learn the pathname in which the merged
+# result will be stored via placeholder %P.
+
+if [[ "$#" -ne 4 ]]; then
+	echo "Error: Unexpected number of arguments.
+Usage:
+
+## .git/config
+[merge \"gumtree\"]
+	name = GumTree merge driver
+	driver = $0 %O %A %B \"path-to-gumtree\"
+	recursive = binary
+
+## .gitattributes
+*.php merge=gumtree
+"
+	exit 1
+fi
+
+BASE="$1"
+OURS="$2"
+THEIRS="$3"
+GUMTREE="$4"
+
+cp "$BASE" "$BASE.php"
+cp "$OURS" "$OURS.php"
+cp "$THEIRS" "$THEIRS.php"
+
+function finish {
+	rm -f "$BASE.php" "$OURS.php" "$THEIRS.php"
+}
+trap finish EXIT
+
+"$GUMTREE" merge "$BASE.php" "$OURS.php" "$THEIRS.php" > "$OURS"

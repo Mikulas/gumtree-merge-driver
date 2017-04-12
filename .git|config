@@ -1,0 +1,4 @@
+[merge "gumtree"]
+	name = GumTree merge driver
+	driver = .git/gumtree-driver %O %A %B "path-to-gumtree"
+	recursive = binary
