@@ -39,13 +39,16 @@ OURS="$2"
 THEIRS="$3"
 GUMTREE="$4"
 
+# GumTree requires valid extension on merged files
 cp "$BASE" "$BASE.php"
 cp "$OURS" "$OURS.php"
 cp "$THEIRS" "$THEIRS.php"
 
+# Clean those temp files regardless of final merge status
 function finish {
 	rm -f "$BASE.php" "$OURS.php" "$THEIRS.php"
 }
 trap finish EXIT
 
+# Attemp to merge and save result into "%A" as per Git documentation:
 "$GUMTREE" merge "$BASE.php" "$OURS.php" "$THEIRS.php" > "$OURS"
